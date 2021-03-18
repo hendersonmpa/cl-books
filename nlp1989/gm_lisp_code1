@@ -1,0 +1,2523 @@
+# FIRST HALF
+# shar:   Shell Archiver
+# Run the following text with /bin/sh to create
+#      (in the current directory) files:
+#  airdb1.lsp
+#  airdb2.lsp
+#  airlines.lsp
+#  atnarcs1.lsp
+#  atnarcs2.lsp
+#  atnrecog.lsp
+#  bckinfer.lsp
+#  bubrecog.lsp
+#  buparse1.lsp
+#  buparse2.lsp
+#  burecog.lsp
+#  cfpsgram.lsp
+#  chart.lsp
+#  dagunify.lsp
+#  dbq.lsp
+#  disambig.lsp
+#  eng_fre1.lsp
+#  eng_fre2.lsp
+#  english1.lsp
+#  english2.lsp
+#  english_1.lsp
+#  english_2.lsp
+#  europe.lsp
+#  families.lsp
+#  fburecog.lsp
+#  fchart.lsp
+#  featexp.lsp
+#  finite.lsp
+#  foo.lsp
+#  forinfer.lsp
+#  fsbgen.lsp
+#  fsgen.lsp
+#  fsrecog.lsp
+#  fstape.lsp
+#  fstgen.lsp
+#  fstrans.lsp
+#  help_1.lsp
+#  help_3.lsp
+#  inherits.lsp
+# This archive created: Mon Aug 24 11:29:57 BST 1992
+cat << SHAR_EOF >  airdb1.lsp
+;;; airdb1.lsp [Chapter  9] example database about airline companies
+
+;;; (located COMPANY COUNTRY)
+;;; (bought COMPANY COMPANY)
+;;; (subsidiary COMPANY COMPANY)
+
+(defvar database)
+
+(setq database
+ '((located Air_Cal US)
+   (located American_Airlines US)
+   (located British_Airways England)
+   (located British_Caledonian England)
+   (located Cambrian_Airways Scotland)
+   (located Carl_Icahn US)
+   (located Continental US)
+   (located Delta US)
+   (located Eastern_Airlines US)
+   (located Empire US)
+   (located Frontier US)
+   (located Hughes_Airwest US)
+   (located National_Airlines US)
+   (located Northwest US)
+   (located Ozark US)
+   (located Pan_Am_Pacific US)
+   (located Pan_Am US)
+   (located People_Express US)
+   (located Piedmont US)
+   (located Republic US)
+   (located Scotair Scotland)
+   (located Scottish_Airways Scotland)
+   (located Texas_Air US)
+   (located Trans_World_Airlines US)
+   (located US_Air US)
+   (located United_Airlines US)
+   (located Virgin_Airways England)
+   (located Western US)
+
+   (bought American_Airlines Air_Cal)
+   (bought British_Airways British_Caledonian)
+   (bought Carl_Icahn Trans_World_Airlines)
+   (bought Delta Western)
+   (bought Northwest Republic)
+   (bought Pan_Am National_Airlines)
+   (bought People_Express Frontier)
+   (bought Piedmont Empire)
+   (bought Republic Hughes_Airwest)
+   (bought Texas_Air Continental)
+   (bought Texas_Air Eastern_Airlines)
+   (bought Texas_Air People_Express)
+   (bought Trans_World_Airlines Ozark)
+   (bought United_Airlines Pan_Am_Pacific)
+   (bought US_Air Piedmont)
+
+   (subsidiary Scotair British_Caledonian)
+   (subsidiary Scotair British_Airways)
+   (subsidiary Cambrian_Airways British_Airways)
+   (subsidiary Scottish_Airways British_Airways)))
+SHAR_EOF
+cat << SHAR_EOF >  airdb2.lsp
+;;; airdb2.lsp [Chapter  9] example rulebase about airline companies
+
+;;; (located COMPANY COUNTRY)
+;;; (bought COMPANY COMPANY)
+;;; (subsidiary COMPANY COMPANY)
+;;; (airline COMPANY)
+;;; (uk_based COMPANY)
+;;; (us_based COMPANY)
+;;; (subsidiary COMPANY)
+
+(defvar infrules)
+
+(setq infrules
+ '(((located Air_Cal US))
+   ((located American_Airlines US))
+   ((located British_Airways England))
+   ((located British_Caledonian England))
+   ((located Cambrian_Airways Scotland))
+   ((located Carl_Icahn US))
+   ((located Continental US))
+   ((located Delta US))
+   ((located Eastern_Airlines US))
+   ((located Empire US))
+   ((located Frontier US))
+   ((located Hughes_Airwest US))
+   ((located National_Airlines US))
+   ((located Northwest US))
+   ((located Ozark US))
+   ((located Pan_Am_Pacific US))
+   ((located Pan_Am US))
+   ((located People_Express US))
+   ((located Piedmont US))
+   ((located Republic US))
+   ((located Scotair Scotland))
+   ((located Scottish_Airways Scotland))
+   ((located Texas_Air US))
+   ((located Trans_World_Airlines US))
+   ((located US_Air US))
+   ((located United_Airlines US))
+   ((located Virgin_Airways England))
+   ((located Western US))
+
+   ((bought American_Airlines Air_Cal))
+   ((bought British_Airways British_Caledonian))
+   ((bought Carl_Icahn Trans_World_Airlines))
+   ((bought Delta Western))
+   ((bought Northwest Republic))
+   ((bought Pan_Am National_Airlines))
+   ((bought People_Express Frontier))
+   ((bought Piedmont Empire))
+   ((bought Republic Hughes_Airwest))
+   ((bought Texas_Air Continental))
+   ((bought Texas_Air Eastern_Airlines))
+   ((bought Texas_Air People_Express))
+   ((bought Trans_World_Airlines Ozark))
+   ((bought United_Airlines Pan_Am_Pacific))
+   ((bought US_Air Piedmont))
+
+   ((subsidiary Scotair British_Caledonian))
+   ((subsidiary Scotair British_Airways))
+   ((subsidiary Cambrian_Airways British_Airways))
+   ((subsidiary Scottish_Airways British_Airways))
+
+   ((airline Airline) (located Airline _x))
+
+   ((uk_based Airline) (located Airline England))
+   ((uk_based Airline) (located Airline Scotland))
+   ((us_based Airline) (located Airline US))
+   ((subsidiary Airline) (subsidiary Airline _x))
+   ((subsidiary Airline1 Airline2) (bought Airline2 Airline1))))
+SHAR_EOF
+cat << SHAR_EOF >  airlines.lsp
+;;; airlines.lsp [Chapter  8] PATR grammar, with semantics, for question-answering
+
+;;; extracting the useful information from a dag
+
+(defun category (d subst)
+   (find_feature_value 'sem d subst))
+
+;;; building a parse tree - just keep the head category
+
+(defun tree (cat subtrees) cat)
+
+(setq lexical_rules
+ '((Word (Delta)
+        (cat) = NP
+        (referent) = TWA
+        (sem)  = (hole))
+   (Word (is independent)
+        (cat) = VP
+        (sem predicate) = independent
+        (sem arg0)     = (arg0))
+   (Word (took over)
+        (cat) = TV
+        (sem predicate) = took_over
+        (sem arg0)     = (arg0)
+        (sem arg1)     = (arg1))
+   (Word (airline)
+       (cat) = N
+       (sem predicate) = airline
+       (sem arg0) = (referent))
+   (Word (hotel chain)
+       (cat) = N
+       (sem predicate) = hotel_chain
+       (sem arg0) = (referent))
+   (Word (every)
+       (cat) = Det
+       (sem quantifier) = all)
+   (Word (each)
+       (cat) = Det
+       (sem quantifier) = all)
+   (Word (an)
+       (cat) = Det
+       (sem quantifier) = exists)
+   (Word (a)
+       (cat) = Det
+       (sem quantifier) = exists)
+   (Word (who)
+        (cat) = NP
+        (sem quantifier) = all
+        (sem restriction) = (hole)
+        (sem body action) = printout
+        (sem body arg0) = (sem variable)
+        (sem variable) = (referent))))
+
+(setq rules
+ '((Rule (S -> NP VP)
+        (S cat) = S
+        (NP cat) = NP
+        (VP cat) = VP
+        (S sem) = (NP sem)
+        (NP hole) = (VP sem)
+        (NP referent) = (VP arg0))
+   (Rule (VP -> TV NP)
+        (VP cat) = VP
+        (TV cat) = TV
+        (NP cat) = NP
+        (VP sem) = (NP sem)
+        (NP hole) = (TV sem)
+        (TV arg0) = (VP arg0)
+        (TV arg1) = (NP referent))
+   (Rule (NP -> Det N)
+        (NP cat) = NP
+        (Det cat) = Det
+        (N cat) = N
+        (NP sem quantifier) = (Det sem quantifier)
+        (NP sem variable) = (NP referent)
+        (NP sem restriction) = (N sem)
+        (NP sem body) = (NP hole)
+        (N referent) = (NP referent))))
+SHAR_EOF
+cat << SHAR_EOF >  atnarcs1.lsp
+;;; atnarcs1.lsp [Chapter  3] example ATN
+
+(setq networks
+ '((S
+     ((Registers (pps auxs mood mainverb arg0 arg1))
+      (Initial (0)        t ((setq pps ()) (setq auxs ())))
+      (Final (3)          t ((list mood
+                                    (append
+                                      (list mainverb
+                                            (list (quote arg0) arg0)
+                                            (list (quote arg1) arg1)
+                                      )
+                                      pps))))
+      (From 0 to 1 by NP  t ((setq arg0 star) (setq mood (quote add))))
+      (From 1 to 2 by V   t ((setq mainverb star)))
+      (From 2 to 2 by V   t ((setq auxs (cons mainverb auxs))
+                                (setq mainverb star)))
+      (From 2 to 3 by NP  t ((setq arg1 star)))
+      (From 2 to 3 by |#| t ((setq arg1 ())))
+      (From 3 to 3 by PP  t ((setq pps (cons star pps))))))
+ (NP
+     ((Registers (res))
+      (Initial (0)        t ())
+      (Final (1)          t (res))
+      (From 0 to 1 by PN  t ((setq res star)))))
+ (PP
+    ((Registers (p arg))
+     (Initial (0)         t ())
+     (Final (2)           t ((list p arg)))
+     (From 0 to 1 by P t ((setq p star)))
+     (From 1 to 2 by NP t ((setq arg star)))))))
+
+(setq abbreviations
+ '((PN abbreviates john mary susan peter)
+   (P abbreviates with behind)
+   (V abbreviates will see)))
+SHAR_EOF
+cat << SHAR_EOF >  atnarcs2.lsp
+;;; atnarcs2.lsp [Chapter  3] extended ATN
+
+(setq networks
+
+ '(
+
+ (S
+   (
+     (Registers (pps auxs mood mainverb arg0 arg1))
+     (Initial (0)          t     ((setq pps ())(setq auxs ())(setq hold ())))
+     (Final (3)  (null hold)     ((list mood
+                                          (append
+                                            (list mainverb
+                                                  (list (quote arg0) arg0)
+                                                  (list (quote arg1) arg1)
+                                            )
+                                            pps))))
+     (From 0 to 4 by V t     ((setq mainverb star)))
+     (From 4 to 2 by NP t     ((setq arg0 star) (setq mood (quote search))))
+     (From 0 to 1 by NP t     ((setq arg0 star) (setq mood (quote add))))
+     (From 1 to 4 by V (equal arg0 (quote ?))
+                               ((setq mainverb star) (setq hold t)))
+     (From 1 to 2 by V t     ((setq mainverb star)))
+     (From 2 to 2 by V t     ((setq auxs (cons mainverb auxs))
+                                        (setq mainverb star)))
+     (From 2 to 3 by NP t     ((setq arg1 star)))
+     (From 2 to 3 by |#| t     ((setq arg1 nil)))
+     (From 3 to 3 by PP t     ((setq pps (cons star pps))))
+   )
+ )
+
+ (NP
+   (
+     (Registers (res))
+     (Initial (0)          t     ())
+     (Final (1)            t     (res))
+     (From 0 to 1 by WH t     ((setq res (quote ?))))
+     (From 0 to 1 by PN t     ((setq res star)))
+     (From 0 to 1 by |#| hold ((setq res (quote ?))(setq hold nil)))
+   )
+ )
+
+ (PP
+   (
+     (Registers (p arg))
+     (Initial (0)          t     ())
+     (Final (2)            t     ((list p arg)))
+     (From 0 to 1 by P t     ((setq p star)))
+     (From 1 to 2 by NP t     ((setq arg star)))
+   )
+ )
+ ))
+
+(setq abbreviations
+ '(
+ (PN abbreviates john mary susan peter)
+ (P abbreviates with behind)
+ (V abbreviates will see)
+ (WH abbreviates who what)
+ ))
+SHAR_EOF
+cat << SHAR_EOF >  atnrecog.lsp
+;;; atnrecog.lsp [Chapter  3] parsing using an ATN
+
+(uses 'fstape)     ;; for tape-moving functions
+(defvar networks)
+(defvar abbreviations)
+
+;; Accessing portions of networks
+
+(defun initial_nodes (net)
+   (nth 1 (assoc 'Initial net)))
+
+(defun initial_tests (net)
+   (nth 2 (assoc 'Initial net)))
+
+(defun initial_actions (net)
+   (nth 3 (assoc 'Initial net)))
+
+(defun final_nodes (net)
+   (nth 1 (assoc 'Final net)))
+
+(defun final_tests (net)
+   (nth 2 (assoc 'Final net)))
+
+(defun final_actions (net)
+   (nth 3 (assoc 'Final net)))
+
+(defun transitions (net)
+   (cddr net))
+
+(defun trans_node (transition)
+   (getf transition 'From))
+
+(defun trans_newnode (transition)
+   (getf transition 'to))
+
+(defun trans_label (transition)
+   (getf transition 'by))
+
+(defun trans_tests (transition)
+   (nth 6 transition))
+
+(defun trans_actions (transition)
+   (nth 7 transition))
+
+(defun get_network (name)
+  (cadr (assoc name networks)))
+
+(defun regs_used (net)
+   (nth 1 (assoc 'Registers net)))
+
+(defun initial_regs (net)
+  (list
+    (regs_used net)
+    (mapcar #'not (regs_used net))))
+
+
+;;; Stack accessing
+
+(defun stacked_networkname (stack)
+  (nth 0 (car stack)))
+
+(defun stacked_node (stack)
+  (nth 1 (car stack)))
+
+(defun stacked_regs (stack)
+  (nth 2 (car stack)))
+
+(defun stacked_tests (stack)
+  (nth 3 (car stack)))
+
+(defun stacked_actions (stack)
+  (nth 4 (car stack)))
+
+;;; Top level of ATN interpreter
+
+(defun atn_recognize (networkname tape)
+  (catch
+    'atn
+    (let* (
+       (network (get_network networkname))
+       (regs_hold
+         (doactions (initial_regs network) (initial_actions network) () ())))
+      (dolist (initialnode (initial_nodes network))
+        (atn_recognize_next
+          networkname initialnode tape () (car regs_hold) (cadr regs_hold))))))
+
+;;; tape moving
+(defun atn_recognize_move (label tape)
+   (recognize_move label tape))
+
+;;; Try all ATN traversals starting at a given node
+
+(defun atn_recognize_next (networkname node tape stack regs hold)
+  (if (member node (final_nodes (get_network networkname)))
+    (atn_recognize_pop networkname tape stack regs hold))
+  (dolist (transition (transitions (get_network networkname)))
+    (if (equal (trans_node transition) node)
+      (let ((label (trans_label transition))
+         (newnode (trans_newnode transition)))
+        (if (get_network label)
+          ;; interpret label as network name
+          (atn_recognize_push label networkname transition tape stack regs hold))
+        ;; interpret label as symbol/abbreviation
+        (atn_recognize_traverse label networkname transition tape stack regs hold)))))
+
+(defun atn_recognize_pop (networkname tape stack regs hold)
+  (if (dotests regs (final_tests (get_network networkname)) hold nil)
+    (let (
+       (star_newhold
+         (dopopactions regs (final_actions (get_network networkname)) hold nil)))
+      (if (and (null stack) (null tape))
+        ;; end of top-level network
+        (throw 'atn (car star_newhold))
+        (if (and stack
+            ;; end of subsidiary network
+            ;; do tests at end of original PUSH
+            (dotests
+              (stacked_regs stack)
+              (stacked_tests stack)
+              (cadr star_newhold)        ; hold
+              (car star_newhold)))       ; star (result of POP)
+          ;; execute actions at end of original PUSH
+          (let ( (newregs_newhold
+               (doactions
+                 (stacked_regs stack)
+                 (stacked_actions stack)
+                 (cadr star_newhold)            ; hold
+                 (car star_newhold))))          ; star
+            ;; proceed in original network, using stacked values
+            (atn_recognize_next
+              (stacked_networkname stack)
+              (stacked_node stack)
+              tape
+              (cdr stack)
+              (car newregs_newhold)
+              (cadr newregs_newhold))))))))
+
+(defun atn_recognize_push (label networkname transition tape stack regs hold)
+  (let ((newnet (get_network label)))
+    ;; try tests at start of proposed network
+    (if (dotests (initial_regs newnet) (initial_tests newnet) hold nil)
+      ;; execute actions at start of new network
+      (let ((newregs_newhold
+           (doactions
+             (initial_regs newnet)
+             (initial_actions newnet)
+             hold
+             nil)))
+        ;; explore from all initial nodes
+        (dolist (initialnode (initial_nodes newnet))
+          (atn_recognize_next
+            label
+            initialnode
+            tape
+            (cons           ; new value of stack
+              (list
+                networkname                     ; network
+                (trans_newnode transition)      ; destination node
+                regs                            ; registers
+                (trans_tests transition)        ; post tests
+                (trans_actions transition)      ; post actions
+                )
+              stack)
+            (car newregs_newhold)
+            (cadr newregs_newhold)))))))
+
+(defun atn_recognize_traverse (label networkname transition tape stack regs hold)
+  ;; try moving the tape
+  (dolist (newtape (recognize_move label tape))
+    ;; set the star register
+    (let ((star (diff_tape newtape tape)))
+      ;; try the arc tests
+      (if (dotests regs (trans_tests transition) hold star)
+        (let (
+           (newregs_newhold
+             ;; execute the arc actions
+             (doactions
+               regs
+               (trans_actions transition)
+               hold
+               star)))
+          ;; continue from the destination node
+          (atn_recognize_next
+            networkname
+            (trans_newnode transition)
+            newtape
+            stack
+            (car newregs_newhold)
+            (cadr newregs_newhold)))))))
+
+(defun diff_tape (newtape oldtape)
+  (if (equal newtape oldtape)
+    '()
+    (car oldtape)))
+
+;;; Actions and Tests
+
+(defun dopopactions (regs expr hold star)
+  (apply
+    `(lambda ,(cons 'star (cons 'hold (car regs)))
+      (list
+        (let () ,@expr)
+        hold))
+    (cons star (cons hold (cadr regs)))))
+
+(defun doactions (regs actions hold star)
+  (apply
+    `(lambda ,(cons 'star (cons 'hold (car regs)))
+      ,@actions
+      (list
+        (list (quote ,(car regs))
+          (list ,@(car regs))) hold))
+    (cons star (cons hold (cadr regs)))
+    )
+  )
+
+(defun dotests (regs tests hold star)
+  (apply
+    `(lambda ,(cons 'star (cons 'hold (car regs)))
+      ,tests)
+    (cons star (cons hold (cadr regs)))
+    )
+  )
+SHAR_EOF
+cat << SHAR_EOF >  bckinfer.lsp
+;;; bckinfer.lsp [Chapter  9] backwards inference engine
+
+;;; N.B. NOT uses negation by failure
+
+(uses 'subst)
+(uses 'tunify)
+
+(defvar infrules)
+(defparameter YES (list empty_subst))
+
+(defun back_infer (goal)
+  (if (equal (car goal) 'and)
+    (back_infer_all (cdr goal))
+    (if (equal (car goal) 'true)
+      (list YES)
+      (if (and (equal (car goal) 'not) (equal (length goal) 2))
+        (if (back_infer (cadr goal))
+          nil
+          (list YES))
+        (let ((substs ()))
+          (dolist (rule infrules substs)
+            (setq substs
+              (append
+                (solutions_using_rule goal rule)
+                substs))))))))
+
+(defun solutions_using_rule (goal rule)
+  (let ((substs ()))
+    (if (and
+        (equal (caar rule) (car goal)) ; check same predicate
+        (equal (length (car rule)) (length goal))) ; check same no of args
+      (let*
+        ((newrule (rename rule))
+         (headsubst (termunify goal (car newrule))))
+        (if headsubst ; check that conclusion of rule matches goal
+          (dolist
+            (bodysubst
+              (back_infer_all
+                (apply_subst headsubst (cdr newrule))))
+            (setq substs
+              (cons
+                (compose_substs headsubst bodysubst)
+                substs))))))
+    substs))
+
+(defun back_infer_all (goals)
+  (if (null goals)
+    (list empty_subst)
+    (let ((substs ()))
+      (dolist (subst1 (back_infer (car goals)))
+        (dolist (subst2 (back_infer_all (apply_subst subst1 (cdr goals))))
+          (setq substs
+            (cons
+              (compose_substs subst1 subst2)
+              substs))))
+      substs)))
+
+SHAR_EOF
+cat << SHAR_EOF >  bubrecog.lsp
+;;; bubrecog.lsp [Chapter  5] bottom-up, breadth-first recognition for a CF-PSG
+
+(defvar rules)
+
+;;; as in burecog
+
+(defun rewrite (string LHS RHS)
+  ;; returns a new string if the rule can rewrite it - or nil
+  (if (null RHS)      ; successful rewrite
+    (cons LHS string)
+    (if (null string) ; end of string
+      nil
+      (if (equal (car string) (car RHS))
+        (rewrite (cdr string) LHS (cdr RHS))
+        nil)))) ; rule does not match
+
+(defun recognize (string)
+  (do ((alternatives (list string))) ((null alternatives))
+    (setq alternatives (next_states_list alternatives))))
+
+;;; Given a list of states, append the next states from all
+;;; of them
+
+(defun next_states_list (list)
+  (if (null list)
+    '()
+    (append
+      (next_states (car list))
+      (next_states_list (cdr list)))))
+
+;;; Given a single state, make the list of next states
+
+(defun next_states (string)
+  (if (equal (length string) 1)
+    (print (car string)))
+  (do (
+     (left () (append left (list (car remaining))))
+     (remaining string (cdr remaining))
+     (results ()))
+    ((null remaining) results)      ; do until end of string
+    (dolist (rule rules)
+      (let ((newstring (rewrite remaining (car rule) (cdr rule))))
+        (if newstring
+          (setq results (cons (append left newstring) results)))))))
+SHAR_EOF
+cat << SHAR_EOF >  buparse1.lsp
+;;; buparse1.lsp [Chapter  5] bottom-up parsing for a CF-PSG
+
+(defvar parses)
+(defvar rules)
+
+(defun initial_segment (goals string)
+  ;; returns nil or a list (needed others)
+  (do*
+    (
+     (restgoals goals (cdr restgoals))
+     (needed nil (append needed (list (car reststring))))
+     (reststring string (cdr reststring)))
+    ((not (rule_item_match restgoals reststring))
+     (if (null restgoals)
+       (list needed reststring)
+       nil))))
+
+;;; does the first item of a list of goals match
+;;; the first item in a string?
+
+(defun rule_item_match (goals string)
+  (and goals
+    (or
+      (and
+        (consp (car goals))     ; category
+        (consp (car string))    ; tree
+        (equal (caar goals) (caar string)))
+      (and
+        (atom (car goals))      ; word
+        (equal (car goals) (car string))))))
+
+(defun next (string)
+  (if (equal (length string) 1)
+    (setq parses (cons (car string) parses))
+    (do
+      (
+       (left nil (append left (list (car tape))))
+       (tape string (cdr tape)))
+      ((null tape))      ; do until end of tape
+      (dolist (rule rules)
+        (let ((needed_others (initial_segment (cdr rule) tape)))
+          (if (null needed_others)
+            nil  ; rewrite failed
+            (next (append left (list (cons (caar rule) (car needed_others))) (cadr needed_others)))
+            ))))))
+
+(defun parse (string)
+  (setq parses nil)
+  (next string)
+  parses)
+SHAR_EOF
+cat << SHAR_EOF >  buparse2.lsp
+;;; buparse2.lsp [Chapter  5] bottom-up parser CF-PSG with less redundancy
+
+(defvar parses)
+(defvar rules)
+
+(defun next (string pos)
+  (if (equal (length string) 1)
+    (setq parses (cons (car string) parses))
+    (do
+      (
+       (left nil (append left (list (car tape))))
+       (len (length string) (- len 1))
+       (newpos pos)
+       (tape string (cdr tape)))
+      ((null tape))      ;; do until end of tape
+      (setq newpos (min len newpos))
+      (dolist (rule rules)
+        (let ((needed_others (initial_segment (cdr rule) tape)))
+          (if (and needed_others (< (length (cadr needed_others)) pos))
+            (next (append left (list (cons (caar rule) (car needed_others)))
+                (cadr needed_others)) newpos))))
+      (if (atom (car tape))
+        (setq tape nil)))))  ; quit loop
+
+(defun initial_segment (goals string)
+  ;; returns nil or a list (needed others)
+  (do*
+    (
+     (restgoals goals (cdr restgoals))
+     (needed nil (append needed (list (car reststring))))
+     (reststring string (cdr reststring))
+     )
+    ((not (rule_item_match restgoals reststring))
+     (if (null restgoals)
+       (list needed reststring)
+       nil))))
+
+;;; does the first item of a list of goals match
+;;; the first item in a string?
+
+(defun rule_item_match (goals string)
+  (and goals
+    (or
+      (and
+        (consp (car goals))       ;; category
+        (consp (car string))    ;; tree
+        (equal (caar goals) (caar string)))
+      (and
+        (atom (car goals))        ;; word
+        (equal (car goals) (car string))))))
+
+(defun parse (string)
+  (setq parses nil)
+  (next string (length string))
+  parses)
+SHAR_EOF
+cat << SHAR_EOF >  burecog.lsp
+;;; burecog.lsp [Chapter  5] bottom-up recognition for a CF-PSG
+
+(defun next (string)
+  (if (equal string '((S)))
+    (print '(yes))
+    (do
+      (
+       (left nil (append left (list (car tape))))
+       (tape string (cdr tape)))
+      ((null tape))      ; do until end of tape
+      (dolist (rule rules)
+        (let ((newstring (rewrite tape (car rule) (cdr rule))))
+          (if (null newstring)
+            nil    ; rewrite failed
+            (next (append left newstring))))))))
+
+(defun rewrite (string LHS RHS)
+  ;; returns a new string if the rule can rewrite it - or nil
+  (if (null RHS)      ; successful rewrite
+    (cons LHS string)
+    (if (null string) ; end of string
+      nil
+      (if (equal (car string) (car RHS))
+        (rewrite (cdr string) LHS (cdr RHS))
+        nil)))) ; rule does not match
+SHAR_EOF
+cat << SHAR_EOF >  cfpsgram.lsp
+;;; cfpsgram.lsp [Chapter  4] example context free grammar in list format
+
+(defvar rules)
+
+(setq rules
+ '(((S) (NP) (VP))
+   ((VP) (V))
+   ((VP) (V) (NP))
+   ((V) died)
+   ((V) employed)
+   ((NP) nurses)
+   ((NP) patients)
+   ((NP) Medicenter)
+   ((NP) Dr Chan)))
+SHAR_EOF
+cat << SHAR_EOF >  chart.lsp
+;;; chart.lsp [Chapter  6] simple chart parser
+
+;;; This file contains code for both top-down and bottom-up
+;;; but the former is commented out
+
+
+(defvar chart)
+(defvar agenda)
+
+;;  an edge is a list of 5 elements :
+;;      start finish label found tofind
+(defun start (edge)
+  (nth 0 edge))
+
+(defun finish (edge)
+  (nth 1 edge))
+
+(defun label (edge)
+  (nth 2 edge))
+
+(defun found (edge)
+  (nth 3 edge))
+
+(defun tofind (edge)
+  (nth 4 edge))
+
+;;; add an edge to the chart, recording any new edges that may need
+;;; to be added as a consequence
+
+(defun add_edge (edge)
+  (setq chart (cons edge chart))
+  (if (null (tofind edge))    ; added edge is inactive
+    (progn
+      (dolist (chartedge chart)
+        (if (not (null (tofind chartedge)))   ; look for active edge
+          (check_and_combine chartedge edge)))
+      (inactive_edge_function edge))
+    (progn  ; otherwise added edge is active
+      (dolist (chartedge chart)
+        (if (null (tofind chartedge))   ; look for inactive edge
+          (check_and_combine edge chartedge)))
+      (active_edge_function edge))))
+
+;;; try to combine an active and inactive edge
+;;; using the fundamental rule
+;;; add a new edge to agenda if these can combine
+
+(defun check_and_combine (active_edge inactive_edge)
+  (if
+    (and
+      (equal (start inactive_edge) (finish active_edge))
+      (equal (label inactive_edge) (car (tofind active_edge))))
+    (agenda_add
+      (list                         ; new edge
+        (start active_edge)
+        (finish inactive_edge)
+        (label active_edge)
+        (append (found active_edge)
+          (list
+            (tree (label inactive_edge) (found inactive_edge))))
+        (cdr (tofind active_edge))))))
+
+;;; initialize the chart (bottom-up version)
+
+(defun initialize_chart (goal string)
+  (do* (
+     (vertex 0 (+ vertex 1))
+     (remaining string (cdr remaining))
+     (word (car string) (car remaining)))
+    ((null word))
+    (agenda_add
+      (list
+        ;; (start finish label found tofind)
+        vertex (+ 1 vertex) word nil nil))))
+
+;;; top level function
+
+(defun chart_parse (goal string)
+  (setq agenda nil)
+  (setq chart nil)
+  (initialize_chart goal string)
+  (do
+    ( (edge (car agenda) (car agenda)) )
+    ((null agenda))    ;; do until agenda empty
+    (setq agenda (cdr agenda))
+    (add_edge edge))  ;; add and combine edge with chart
+  (let ((parses ()))
+    (dolist (edge chart parses)
+      (if (and
+          (equal (start edge) 0)
+          (equal (finish edge) (length string)) ; end of string
+          (equal (label edge) goal)        ; recognizes goal
+          (null (tofind edge)))         ; edge complete
+        (setq parses
+          (cons
+            (tree goal (found edge))  ; parse tree
+            parses))))))
+
+;;; bottom up parsing functions
+
+(defun inactive_edge_function (edge)
+  (dolist (rule rules)
+    (if (equal (label edge) (cadr rule)) ; the first daughter in the rhs
+      (agenda_add
+        (list
+          (start edge) (start edge) (car rule) nil (cdr rule))))))
+
+(defun active_edge_function (edge) t)
+
+;;; depth first search
+
+(defun agenda_add (edge)
+  (if (or
+      (already_in edge agenda)   ; left recursion check
+      (already_in edge chart))
+    nil            ; do not add to agenda
+    (setq agenda (cons edge agenda))))  ; add to front of agenda
+
+(defun already_in (edge edgelist)
+  (member edge edgelist :test #'equal))
+
+;;; building parse trees
+
+(defun tree (cat subtrees)
+  (if (consp cat)
+    (cons (car cat) subtrees)
+    cat))
+
+;;; top down functions (commented out)
+
+;;; remove the '(consp' line and the one marked below to release
+;;; the top-down code
+(consp '(
+
+(defun inactive_edge_function (edge) t)
+
+(defun active_edge_function (edge)
+   (add_rules_to_expand (car (tofind edge)) (finish edge)))
+
+(defun add_rules_to_expand (goal vertex)
+  (dolist (rule rules)
+    (if (equal goal (car rule)) ; the lhs of the rule
+      (agenda_add
+        (list vertex vertex (car rule) nil (cdr rule))))))
+
+(defun initialize_chart (goal string)
+  (do* (
+     (vertex 0 (+ vertex 1))
+     (remaining string (cdr remaining))
+     (word (car string) (car remaining)))
+    ((null word))
+    (agenda_add
+      (list
+        ;; (start  finish       label found tofind)
+            vertex (+ 1 vertex) word  nil   nil   )))
+  (add_rules_to_expand goal 0))
+
+))  ;; remove this line to release the top-down code
+SHAR_EOF
+cat << SHAR_EOF >  dagunify.lsp
+;;; dagunify.lsp [Chapter  7] unification for dags
+
+(uses 'subst)
+
+;;; This library file provides the following utilities for operating
+;;; on dags:
+
+;;;(GET_VALUE feature dag subst1) returns (value subst2)
+;;;(COMBINE_VALUES value1 value2 substitution1) returns substitution2/nil;
+;;;(FIND_FEATURE_VALUE feature dag substitution) returns value/'ANY;
+;;;(unify dag1 dag2) returns substitution/nil;
+;;;(simplify_features subst dag1) returns dag2;
+;;;(PUT_VALUE_IN (feature value) dag subst1) returns (subst2 remainder_dag)
+
+;;; Unification
+
+(defun unify (dag1 dag2)
+  (combine_values dag1 dag2 empty_subst))
+
+(defun combine_values (dag1 dag2 substitution)
+  (let* (
+     (realdag1 (lookup_subst dag1 substitution))
+     (realdag2 (lookup_subst dag2 substitution)))
+    (if (equal realdag1 realdag2)
+      substitution
+      (if (isvar realdag1)
+        (add_subst realdag1 realdag2 substitution)
+        (if (isvar realdag2)
+          (add_subst realdag2 realdag1 substitution)
+          (if (and (listp realdag1) (listp realdag2))
+            ;; make sure that everything in dag1 is in dag2
+            (do
+              ((subst substitution))
+              ((isvar realdag1)
+               ;; finally put the rest of dag2 at the end of dag1
+               ;; (as long as subst is not nil)
+               (and subst (add_subst realdag1 realdag2 subst)))
+              (let* (
+                 (feature (caar realdag1))
+                 (value (lookup_subst (cadar realdag1) subst)))
+                (if (equal feature '&)
+                  (setq realdag1 value)
+                  (let (
+                     (subst_dag2 (put_value_in (list feature value) realdag2 subst)))
+                    (setq realdag2 (cadr subst_dag2))
+                    (setq subst (car subst_dag2))
+                    (setq realdag1 (cdr realdag1))
+                    (if (null subst) (return nil))))))
+            nil))))))
+
+;;; Go through a dag and add the feature-value pair in FPAIR,
+;;; adding to the substitution substitution
+;;; if necessary.  This function returns in a list:
+;;;
+;;;    a) the new value of substitution
+;;;    b) the rest of the dag
+;;;       (i.e. everything except that one feature-value pair)
+
+(defun put_value_in (fpair dag substitution)
+  (let*
+    ((realdag (lookup_subst dag substitution)))
+    (if (consp realdag)
+      (let ((value (assoc (car fpair) realdag)))
+        (if value
+          ;; dag already has a value for that feature
+          (list
+            (combine_values (cadr value) (cadr fpair) substitution)
+            (delete_feature_entry  (car fpair) realdag))
+          ;; try the continuation entry
+          (let (
+             (rest (lookup_subst (cadar (last realdag)) substitution))
+             (first (butlast realdag)))
+            (if (isvar rest)
+              ;; continuation is empty
+              (let ((newrest (newvar)))
+                (list
+                  (add_subst rest (list fpair (list '& newrest)) substitution)
+                  (append first (list (list '& newrest))))))
+            ;; continuation non-empty - recurse
+            (let ((subst_rest (put_value_in fpair rest substitution)))
+              (list
+                (car subst_rest)
+                (append first (cadr subst_rest)))))))
+      (if (isvar realdag)
+        ;; variable as dag - add to substitution
+        (let ((newrest (newvar)))
+          (list
+            (add_subst realdag (list fpair (list '& newrest)) substitution)
+            (list (list '& newrest))))
+        (error "Cannot find feature value in atom ~S" (list (car fpair) dag))))))
+
+;;; delete the entry for a given feature in a dag
+;;; (guaranteed to come before the continuation entry)
+
+(defun delete_feature_entry (feature dag)
+  (if (equal feature (caar dag))
+    (cdr dag)
+    (cons (car dag) (delete_feature_entry feature (cdr dag)))))
+
+;;; Get value of a feature, adding to the substitution if necessary
+;;; return a list consisting of a value and a new substitution
+
+(defun get_value (feature dag substitution)
+  (let* (
+     (realdag (apply_subst substitution dag))
+     (value (and (consp realdag) (assoc feature realdag))))
+    (if value
+      (list (cadr value) substitution)
+      (if (isvar realdag)
+        (let* ((newrest (newvar)) (newvalue (newvar)))
+          (list
+            newvalue
+            (add_subst
+              realdag
+              (list (list feature newvalue) (list '& newrest))
+              substitution)))
+        (if (consp realdag)
+          (let ((rest (apply_subst substitution (cadar (last realdag)))))
+            (if (isvar rest)
+              (let* ((newrest (newvar)) (newvalue (newvar)))
+                (list
+                  newvalue
+                  (add_subst
+                    rest
+                    (list (list feature newvalue) (list '& newrest))
+                    substitution)))
+              (get_value feature rest substitution)))
+          '(() ()))))))
+
+;;; find the value associated with a feature in a dag
+;;; return ANY if there is no recorded value
+
+(defun find_feature_value (feature dag substitution)
+  (let ((realdag (lookup_subst dag substitution)))
+    (if (consp realdag)
+      (let
+        ((value (assoc feature realdag)))
+        (if value
+          (lookup_subst (cadr value) substitution)
+          (let ((rest (lookup_subst (cadar (last realdag)) substitution)))
+            (if (isvar rest)
+              'ANY
+              (find_feature_value feature rest substitution)))
+          ))
+      'ANY)))
+
+;;; Version of apply_subst which produces a
+;;; new version of a dag which has all the remainders
+;;; 'flattened out'
+
+(defun simplify_features (substitution dag)
+  (let ((realdag (lookup_subst dag substitution)))
+    (if (consp realdag)
+      (simplify_features_list substitution realdag)
+      realdag)))
+
+(defun simplify_features_list (substitution dag)
+  (if (null dag)
+    '()
+    (if (equal (caar dag) '&)
+      (let ((remainder (lookup_subst (cadar dag) substitution)))
+        (if (isvar remainder)
+          (list (list '& remainder))
+          (simplify_features_list substitution remainder)))
+      (cons
+        (list (caar dag) (simplify_features substitution (cadar dag)))
+        (simplify_features_list substitution (cdr dag))))))
+SHAR_EOF
+cat << SHAR_EOF >  dbq.lsp
+;;; dbq.lsp [Chapter  9] database query language evaluator
+
+;;; N.B. (because of negation as failure) some kinds of
+;;; queries return no bindings but only success/failure
+
+(uses 'subst)
+(uses 'tunify)
+(defvar database)
+
+;;; return a list of substitutions
+
+(defparameter NO nil)
+(defparameter YES (list empty_subst))
+
+(defun query (formula)
+  (if (listp formula)
+    (case (car formula)
+      (all
+        (process_all
+          (cadr formula)          ; x
+          (caddr formula)         ; p1
+          (caddr (cdr formula)))) ; p2
+      (exists
+        (process_exists
+          (cadr formula)          ; x
+          (caddr formula)         ; p1
+          (caddr (cdr formula)))) ; p2
+      (and
+        (process_and
+          (cadr formula)          ; p1
+          (caddr formula)))       ; p2
+      (or
+        (process_or
+          (cadr formula)          ; p1
+          (caddr formula)))       ; p2
+      (not
+        (process_not
+          (cadr formula)))        ; p1
+      (true
+        YES)               ; return true
+      (printout
+        (print (cadr formula)) YES) ; return true
+      (otherwise (retrieve_all formula)))
+    (retrieve_all formula)))
+
+(defun process_all (x p1 p2)
+  (dolist (subst (query p1) YES)
+    (if (equal (lookup_subst x subst) x)
+      (error "ALL condition doesnt bind variable ~S" (list x p1)))
+    (if (null
+        (query
+          (apply_subst
+            (add_subst x (lookup_subst x subst) empty_subst)
+            p2)))
+      (return NO))))
+
+(defun process_exists (x p1 p2)
+  (dolist (subst (query p1) NO)
+    (if (equal x (lookup_subst x subst))
+      (error "EXISTS condition doesnt bind variable ~S" (list x p1)))
+    (if (query
+        (apply_subst
+          (add_subst x (lookup_subst x subst) empty_subst) p2))
+      (return YES))))
+
+(defun process_and (p1 p2)
+  (let ((results ()))
+    (dolist (subst1 (query p1))
+      (dolist (subst2 (query (apply_subst subst1 p2)))
+        (setq results
+          (cons
+            (compose_substs subst1 subst2)
+            results))))
+    results))
+
+(defun process_or (p1 p2)
+  (append (query p1) (query p2)))
+
+(defun process_not (p1)
+  (if (null (query p1))
+    YES
+    NO))
+
+(defun retrieve_all (formula)
+  (let ((results ()))
+    (dolist (term database results)
+      (let ((subst (termunify term formula)))
+        (if subst
+          (setq results (cons subst results)))))))
+SHAR_EOF
+cat << SHAR_EOF >  disambig.lsp
+;;; disambig.lsp [Chapter  8] PATR grammar showing disambiguation by semantic features
+
+;;; This grammar illustrates the use of semantic markers to
+;;; reduce the number of parses
+;;; E.g. it only produces one analysis of each of the following
+;;;     get a screwdriver with a narrow blade
+;;;     get a screwdriver with your left hand
+
+(setq rules
+ '((Rule (VP  -> TV NP)
+       (VP cat) = VP
+       (TV cat) = TV
+       (NP cat) = NP
+       (TV arg1 type) = (NP type))
+   (Rule (VP1 -> VP2 PP)
+       (VP1 cat) = VP
+       (VP2 cat) = VP
+       (PP cat) = PP
+       (PP arg0 type) = action)
+   (Rule (PP  -> P NP)
+       (PP cat) = PP
+       (P cat) = P
+       (NP cat) = NP
+       (PP arg0 type) = (P arg0 type)
+       (P arg1 type) = (NP type))
+   (Rule (NP  -> Det NB)
+       (NP cat) = NP
+       (Det cat) = Det
+       (NB cat) = NB
+       (NP type) = (NB type))
+   (Rule (NP1 -> NP2 PP)
+       (NP1 cat) = NP
+       (NP2 cat) = NP
+       (PP cat) = PP
+       (NP1 type) = (NP2 type)
+       (PP arg0 type) = (NP2 type))
+   (Rule (NB  -> N)
+       (NB cat) = NB
+       (N cat) = N
+       (NB type) = (N type))
+   (Rule (NB1 -> Adj NB2)
+       (NB1 cat) = NB
+       (Adj cat) = Adj
+       (NB2 cat) = NB
+       (NB1 type) = (Adj arg0 type)
+       (NB1 type) = (NB2 type))))
+
+(setq lexical_rules
+ '((Word (with)
+       (cat) = P
+       (arg0 type) = action
+       (arg1 type major) = physobj
+       (arg1 type minor) = instrument)
+   (Word (with)
+       (cat) = P
+       (arg0 type major) = physobj
+       (arg1 type major) = physobj
+       (arg1 type minor) = component)
+   (Word (get)
+       (cat) = TV
+       (arg1 type major) = physobj)
+   (Word (a)
+       (cat) = Det)
+   (Word (your)
+       (cat) = Det)
+   (Word (screwdriver)
+       (cat) = N
+       (type major) = physobj)
+   (Word (hand)
+       (cat) = N
+       (type major) = physobj
+       (type minor) = instrument)
+   (Word (blade)
+       (cat) = N
+       (type major) = physobj
+       (type minor) = component)
+   (Word (narrow)
+       (cat) = Adj
+       (arg0 type major) = physobj)
+   (Word (left)
+       (cat) = Adj
+       (arg0 type major) = physobj)))
+
+(defun category (d subst)
+   (find_feature_value 'cat d subst))
+
+(defun tree (cat subtrees)
+   (cons cat subtrees))
+SHAR_EOF
+cat << SHAR_EOF >  eng_fre1.lsp
+;;; eng_fre1.lsp [Chapter  2] simple FST for English-French translation
+
+(setq eng_fre1
+ '((Initial (1))
+   (Final (5))
+    (From 1 to 2 by WH)
+    (From 2 to 3 by BE)
+    (From 3 to 4 by DET)
+    (From 4 to 5 by NOUN)))
+
+(setq abbreviations
+ '((WH (where ou))
+   (BE (is est))
+   (DET (the |#|))
+   (NOUN (exit la_sortie) (policeman le_gendarme)
+         (shop la_boutique) (toilet la_toilette))))
+SHAR_EOF
+cat << SHAR_EOF >  eng_fre2.lsp
+;;; eng_fre2.lsp [Chapter  3] simple PT for English-French translation
+
+(defvar networks)
+
+(setq networks
+ '((S
+       ((Initial (0))
+        (Final   (2))
+        (From 0 to 1 by NP)
+        (From 1 to 2 by VP)))
+   (NP
+       ((Initial (0))
+        (Final   (2))
+        (From 0 to 1 by DET-FEMN)
+        (From 1 to 2 by N-FEMN)
+        (From 0 to 4 by DET-MASC)
+        (From 4 to 2 by N-MASC)
+        (From 2 to 3 by WH)
+        (From 3 to 2 by VP)))
+   (VP
+       ((Initial (0))
+        (Final (1 2))
+        (From 0 to 1 by V)
+        (From 1 to 2 by NP)
+        (From 1 to 3 by (that que))
+        (From 3 to 2 by S)))))
+
+(setq abbreviations
+ '((N-MASC (man homme) (horse cheval))
+   (N-FEMN (house maison) (table table))
+   (NP (John Jean) (Mary Marie) (Jean Jeanne))
+   (DET-MASC (a un) (the le) (this ce))
+   (DET-FEMN (a une) (the la) (this cette))
+   (V (sees voit) (hits frappe) (sings chante) (lacks manque))
+   (WH (who qui) (which qui) (that qui))))
+SHAR_EOF
+cat << SHAR_EOF >  english1.lsp
+;;; english1.lsp [Chapter  2] FSTN for a fragment of English
+
+(defvar english1)
+
+(setq english1
+  '((Initial (1))
+    (Final (9))
+    (From 1 to 3 by NP)
+    (From 1 to 2 by DET)
+    (From 2 to 3 by N)
+    (From 3 to 4 by BV)
+    (From 4 to 5 by ADV)
+    (From 4 to 5 by |#|)
+    (From 5 to 6 by DET)
+    (From 5 to 7 by DET)
+    (From 5 to 8 by |#|)
+    (From 6 to 6 by MOD)
+    (From 6 to 7 by ADJ)
+    (From 7 to 9 by N)
+    (From 8 to 8 by MOD)
+    (From 8 to 9 by ADJ)
+    (From 9 to 4 by CNJ)
+    (From 9 to 1 by CNJ)))
+
+(setq abbreviations
+ '((NP kim sandy lee)
+   (DET a the her)
+   (N consumer man woman)
+   (BV is was)
+   (CNJ and or)
+   (ADJ happy stupid)
+   (MOD very)
+   (ADV often always sometimes)))
+SHAR_EOF
+cat << SHAR_EOF >  english2.lsp
+;;; english2.lsp [Chapter  3] RTN for a fragment of English
+
+(defvar networks)
+
+(setq networks
+ '((S
+       ((Initial  (0))
+        (Final    (2))
+        (From 0 to 1 by NP)
+        (From 1 to 2 by VP)))
+   (NP
+       ((Initial  (0))
+        (Final    (2))
+        (From 0 to 1 by DET)
+        (From 1 to 2 by N)
+        (From 2 to 3 by WH)
+        (From 3 to 2 by VP)))
+   (VP
+       ((Initial  (0))
+        (Final  (1 2))
+        (From 0 to 1 by V)
+        (From 1 to 2 by NP)
+        (From 1 to 3 by that)
+        (From 3 to 2 by S)))))
+
+(setq abbreviations
+ '((N woman house table mouse man)
+   (NP Mayumi Maria Washington John Mary)
+   (DET a the that)
+   (V sees hits sings lacks saw)
+   (WH who which that)))
+SHAR_EOF
+cat << SHAR_EOF >  english_1.lsp
+;;; ENGLISH_1 - FSTN for a fragment of English
+
+(defvar english_1)
+
+(setq english_1
+ '(
+    (Initial (1))
+    (Final (9))
+    (From 1 to 3 by NP)
+    (From 1 to 2 by DET)
+    (From 2 to 3 by N)
+    (From 3 to 4 by BV)
+    (From 4 to 5 by ADV)
+    (From 4 to 5 by |#|)
+    (From 5 to 6 by DET)
+    (From 5 to 7 by DET)
+    (From 5 to 8 by |#|)
+    (From 6 to 6 by MOD)
+    (From 6 to 7 by ADJ)
+    (From 7 to 9 by N)
+    (From 8 to 8 by MOD)
+    (From 8 to 9 by ADJ)
+    (From 9 to 4 by CNJ)
+    (From 9 to 1 by CNJ)
+    )
+)
+
+(setq abbreviations
+ '(
+   (NP kim sandy lee)
+   (DET a the her)
+   (N consumer man woman)
+   (BV is was)
+   (CNJ and or)
+   (ADJ happy stupid)
+   (MOD very)
+   (ADV often always sometimes)
+ ))
+SHAR_EOF
+cat << SHAR_EOF >  english_2.lsp
+;;; ENGLISH_2 - RTN for a fragment of English
+
+(defvar networks)
+
+(setq networks
+ '(
+   (S
+      (
+        (Initial  (0))
+        (Final    (2))
+        (From 0 to 1 by NP)
+        (From 1 to 2 by VP)
+      )
+   )
+
+   (NP
+      (
+        (Initial  (0))
+        (Final    (2))
+        (From 0 to 1 by DET)
+        (From 1 to 2 by N)
+        (From 2 to 3 by WH)
+        (From 3 to 2 by VP)
+      )
+   )
+
+   (VP
+      (
+        (Initial  (0))
+        (Final  (1 2))
+        (From 0 to 1 by V)
+        (From 1 to 2 by NP)
+        (From 1 to 3 by that)
+        (From 3 to 2 by S)
+      )
+   )
+ ))
+
+(setq abbreviations
+ '(
+   (N woman house table)
+   (NP Mayumi Maria Washington)
+   (DET a the that)
+   (V sees hits sings lacks)
+   (WH who which that)
+  )
+)
+SHAR_EOF
+cat << SHAR_EOF >  europe.lsp
+;;; europe.lsp [Chapter  9] example database for question-answering
+
+;;; (border COUNTRY1 COUNTRY2)
+;;; (country COUNTRY POPULATION CAPITAL)
+
+(defvar database)
+
+(setq database
+ '((border portugal spain)
+   (border spain portugal)
+   (border spain andorra)
+   (border andorra spain)
+   (border spain france)
+   (border france spain)
+   (border andorra france)
+   (border france andorra)
+   (border france luxembourg)
+   (border luxembourg france)
+   (border france belgium)
+   (border belgium france)
+   (border france germany)
+   (border germany france)
+   (border france switzerland)
+   (border switzerland france)
+   (border france italy)
+   (border italy france)
+   (border belgium netherlands)
+   (border netherlands belgium)
+   (border luxembourg belgium)
+   (border belgium luxembourg)
+   (border belgium germany)
+   (border germany belgium)
+   (border luxembourg germany)
+   (border germany luxembourg)
+   (border germany switzerland)
+   (border switzerland germany)
+   (border germany austria)
+   (border austria germany)
+   (border switzerland austria)
+   (border austria switzerland)
+   (border switzerland italy)
+   (border italy switzerland)
+   (border austria italy)
+   (border italy austria)
+   (country portugal 92 lisbon)
+   (country spain 505 madrid)
+   (country andorra 1 andorra)
+   (country france 547 paris)
+   (country belgium 31 brussels)
+   (country luxembourg 1 luxembourg)
+   (country netherlands 41 amsterdam)
+   (country germany 249 bonn)
+   (country switzerland 41 berne)
+   (country austria 84 vienna)
+   (country italy 301 rome)))
+SHAR_EOF
+cat << SHAR_EOF >  families.lsp
+;;; families.lsp [Chapter  9] inference rules for family relationships
+
+(defvar infrules)
+
+(setq infrules
+ '(((aunt _x _y) (married _x _z) (uncle _z _y))
+   ((aunt _x _y) (nephew _y _x) (female _x))
+   ((aunt _x _y) (niece _y _x) (female _x))
+   ((aunt _x _y) (sibling _x _z) (parent _z _y) (female _x))
+   ((brother _x _y) (sibling _x _y) (male _x))
+   ((brother_in_law _x _z) (brother _x _y) (married _y _z))
+   ((brother_in_law _x _z) (husband _x _y) (sibling _y _z))
+   ((child _x _y) (parent _y _x))
+   ((child _x _z) (child _x _y) (married _y _z))
+   ((child _x _y) (daughter _x _y))
+   ((child _x _y) (son _x _y))
+   ((cousin _x _y) (cousin _y _x))
+   ((cousin _x _y) (parent _z _x) (aunt _z _y))
+   ((cousin _x _y) (parent _z _x) (nephew _y _z))
+   ((cousin _x _y) (parent _z _x) (niece _y _z))
+   ((cousin _x _y) (parent _z _x) (uncle _z _y))
+   ((daughter _x _y) (female _x) (child _x _y))
+   ((daughter_in_law _x _z) (married _x _y) (son _y _z))
+   ((father _x _y) (parent _x _y) (male _x))
+   ((father_in_law _x _z) (father _x _y) (married _y _z))
+   ((female _x) (aunt _x _y))
+   ((female _x) (daughter _x _y))
+   ((female _x) (daughter_in_law _x _y))
+   ((female _x) (grandmother _x _y))
+   ((female _x) (married _x _y) (male _y))
+   ((female _x) (mother _x _y))
+   ((female _x) (mother_in_law _x _y))
+   ((female _x) (niece _x _y))
+   ((female _x) (sister _x _y))
+   ((female _x) (sister_in_law _x _y))
+   ((female _x) (wife _x _y))
+   ((grandfather _x _y) (grandparent _x _y) (male _x))
+   ((grandmother _x _y) (grandparent _x _y) (female _x))
+   ((grandparent _x _z) (parent _x _y) (parent _y _z))
+   ((husband _x _y) (wife _y _x))
+   ((husband _x _y) (male _x) (married _x _y))
+   ((male _x) (brother _x _y))
+   ((male _x) (brother_in_law _x _y))
+   ((male _x) (father _x _y))
+   ((male _x) (father_in_law _x _y))
+   ((male _x) (grandfather _x _y))
+   ((male _x) (husband _x _y))
+   ((male _x) (married _x _y) (female _y))
+   ((male _x) (nephew _x _y))
+   ((male _x) (son _x _y))
+   ((male _x) (son_in_law _x _y))
+   ((male _x) (uncle _x _y))
+   ((married _x _y) (married _y _x))
+   ((married _x _y) (husband _x _y))
+   ((married _x _y) (wife _x _y))
+   ((mother _x _y) (parent _x _y) (female _x))
+   ((mother_in_law _x _z) (mother _x _y) (married _y _z))
+   ((nephew _x _y) (aunt _y _x) (male _x))
+   ((nephew _x _y) (uncle _y _x) (male _x))
+   ((niece _x _y) (aunt _y _x) (female _x))
+   ((niece _x _y) (uncle _y _x) (female _x))
+   ((parent _x _y) (child _y _x))
+   ((parent _x _z) (married _x _y) (parent _y _z))
+   ((parent _x _y) (father _x _y))
+   ((parent _x _y) (mother _x _y))
+   ((parent _x _y) (parent _x _z) (sibling _y _z))
+   ((sibling _x _y) (brother _x _y))
+   ((sibling _x _y) (parent _z _x) (parent _z _y) (distinct _x _y))
+   ((sibling _x _y) (sibling _y _x))
+   ((sibling _x _y) (sister _x _y))
+   ((sister _x _y) (sibling _x _y) (female _x))
+   ((sister_in_law _x _z) (sister _x _y) (married _y _z))
+   ((sister_in_law _x _z) (wife _x _y) (sibling _y _z))
+   ((son _x _y) (male _x) (child _x _y))
+   ((son_in_law _x _z) (married _x _y) (daughter _y _z))
+   ((uncle _x _y) (married _x _z) (aunt _z _y))
+   ((uncle _x _y) (nephew _y _x) (male _x))
+   ((uncle _x _y) (niece _y _x) (male _x))
+   ((uncle _x _y) (sibling _x _z) (parent _z _y) (male _x))
+   ((wife _x _y) (husband _y _x))
+   ((wife _x _y) (female _x) (married _x _y))))
+SHAR_EOF
+cat << SHAR_EOF >  fburecog.lsp
+;;; fburecog.lsp [Chapter  7] bottom-up recognition for PATR grammars
+
+(uses 'lisppatr)
+
+(defvar rules)
+(defvar lexical_rules)
+(defvar parses)
+
+(defun next (string pos)
+  (if (equal (length string) 1)
+    (setq parses
+      (cons (category (car string) empty_subst) parses))
+    (do (
+       (len (length string) (- len 1))
+       (left nil (append left (list (car tape))))
+       (newpos pos)
+       (tape string (cdr tape)))
+      ((null tape))
+      (setq newpos (min len newpos))
+      (if (atom (car tape))
+        (progn
+          (if (< (length (cdr tape)) newpos)
+            (dolist (rule lexical_rules)
+              (let ((subst_others (rhs_match tape rule)))
+                (if (car subst_others)
+                  (next
+                    (append left (cadr subst_others))
+                    (length (cadr subst_others)))))))
+          (setq tape nil)) ; quit loop
+        (dolist (rule rules)
+          (let* (
+             (subst_others (rhs_match tape rule))
+             (others (cadr subst_others)))
+            (if (and
+                (car subst_others)
+                (< (- (length others) 1) newpos))
+              (next
+                (apply_subst
+                  (car subst_others)
+                  (append left others))
+                (length others)))))))))
+
+;;; return the list of categories recognized
+
+(defun recognize (string)
+  (setq parses nil)
+  (next string (length string))
+  parses
+  )
+SHAR_EOF
+cat << SHAR_EOF >  fchart.lsp
+;;; fchart.lsp [Chapter  7] chart parser for PATR grammars
+
+;;; A version that does topdown with lexical lookup bottom-up
+;;;
+(uses 'lisppatr)
+(uses 'subsumes)
+
+(defvar rules)
+(defvar lexical_rules)
+(defvar chart)
+(defvar agenda)
+(defvar existing_goals)
+
+;;; existing_goals is used to hold a dag of the form
+;;;    ((cat c) (START s) (& ..)),
+;;; where c is a category and s a starting position
+;;; in the chart.  The presence of one of these in existing_goals
+;;; indicates that we have already tried (topdown) looking for instances
+;;; of the specified category starting at the specified position
+
+;;  an edge is a list of 5 elements :
+;;      start finish label found tofind
+(defun start (edge)
+   (nth 0 edge))
+
+(defun finish (edge)
+   (nth 1 edge))
+
+(defun label (edge)
+   (nth 2 edge))
+
+(defun found (edge)
+   (nth 3 edge))
+
+(defun tofind (edge)
+   (nth 4 edge))
+
+;;; add an edge to the chart, recording any new edges that may need
+;;; to be added as a consequence
+
+(defun add_edge (edge)
+  (setq chart (cons edge chart))
+  (if (null (tofind edge)) ; added edge is inactive
+    (progn
+      (dolist (chartedge chart)
+        (if (not (null (tofind chartedge)))   ; an active edge
+          (check_and_combine chartedge edge)))
+      (inactive_edge_function edge))
+    (progn ; otherwise added edge is active
+      (dolist (chartedge chart)
+        (if (null (tofind chartedge)) ; an inactive edge
+          (check_and_combine edge chartedge)))
+      (active_edge_function edge))))
+
+;;; try to combine an active and inactive edge
+;;; using the fundamental rule
+;;; add a new edge to agenda if these can combine
+
+(defun check_and_combine (active_edge inactive_edge)
+  (if (equal (start inactive_edge) (finish active_edge))
+    (let ((subst (unify (label inactive_edge) (car (tofind active_edge)))))
+      (if subst
+        (let (
+           (subtrees
+             (append (found active_edge)
+               (list
+                 (tree
+                   (category (label inactive_edge) subst)
+                   (found inactive_edge))))))
+          (agenda_add
+            (rename
+              (apply_subst subst
+                (list                         ;; new edge
+                  (start active_edge)
+                  (finish inactive_edge)
+                  (label active_edge)
+                  subtrees
+                  (cdr (tofind active_edge)))))))))))
+
+;;; initialize the chart (top-down version)
+
+(defun initialize_chart (goal string)
+  ;; add lexical edges
+  ;; try each lexical rule in turn on each position in the chart
+  ;; this is inefficient
+  (do (
+     (restwords string (cdr restwords))
+     (vertex 0 (+ 1 vertex)))
+    ((null restwords))
+    (dolist (rule lexical_rules)
+      (let ((subst_others (rhs_match restwords rule)))
+        (if (car subst_others)  ; if subst not nil
+          (let ((needed (ldiff restwords (cdadr subst_others))))
+            (agenda_add
+              (list
+                vertex
+                (+ vertex (length needed))
+                (rename (caadr subst_others))
+                needed
+                nil)))))))
+  ;; add goal edge
+  (add_rules_to_expand goal 0))
+
+;;; top level function
+
+(defun chart_parse (goal string)
+  (setq agenda nil)
+  (setq chart nil)
+  (setq existing_goals nil)
+  (initialize_chart goal string)
+  (do
+    ((edge (car agenda) (car agenda)))
+    ((null agenda))
+    ;; do until agenda empty
+    (setq agenda (cdr agenda))
+    (add_edge edge)
+    ;; add and combine edge with chart
+    )
+  (let ((parses ())) ; find complete parses
+    (dolist (edge chart parses)
+      (if (and
+          (equal (start edge) 0)
+          (equal (finish edge) (length string))   ; end of string
+          (null (tofind edge))        ; edge complete
+          (unify (label edge) goal))  ; recognizes goal
+        (setq parses
+          (cons
+            (tree
+              (category (label edge) empty_subst)
+              (found edge))
+            parses))))))
+
+;;; other top-down parsing functions
+;;; (no bottom-up operations here)
+
+(defun inactive_edge_function (x) t)
+
+;;; The topdown rule
+;;;
+;;; The topdown rule is invoked when an edge requiring a next phrase of
+;;; category subgoal is added.  Now subgoal may be a very general
+;;; category and hence not subsumed by any category already recorded in
+;;; existing_goals.  When subgoal is unified with the LHS of a rule,
+;;; however, the result will be more specific and may be subsumed by
+;;; an existing goal.  So subsumption by an existing goal is tested
+;;; after unification with the LHS of a rule.  On the other hand, once
+;;; all the rules have been through, all ways of finding an instance
+;;; of the original subgoal category category have been tried, and so
+;;; it is this general category that is put into a new entry in
+;;; existing_goals
+
+(defun active_edge_function (edge)
+  (add_rules_to_expand (car (tofind edge)) (finish edge)))
+
+(defun add_rules_to_expand (goal vertex)
+  (dolist (rule rules)
+    (let
+      ((subst_rhs (lhs_match goal rule)))
+      (if (car subst_rhs)
+        (let* (
+           (LHS (apply_subst (car subst_rhs) goal))
+           (RHS (cadr subst_rhs)))
+          (if (not (subsumed_goal LHS vertex))
+            ;; if goal not subsumed, add the new edge,
+            ;; renaming so that it can combine with other
+            ;; edges from rules using the same variable
+            ;; symbols (e.g. edges from the same rule that just
+            ;; produced it)
+            (agenda_add
+              (rename
+                (list
+                  vertex
+                  vertex
+                  LHS
+                  nil
+                  RHS))))))))
+  (record_goal goal vertex))
+
+;;; look to see whether a particular category, or one more
+;;; general than it, has been looked for at a given vertex
+
+(defun subsumed_goal (goal vertex)
+  (let ((goaldag
+       (list
+         (list 'goal goal)
+         (list 'vertex vertex)
+         (list '& (newvar)))))
+    (dolist (g existing_goals nil)
+      (if (subsumes g goaldag)
+        (return t)))))
+
+;;; record that a particular category has been searched for
+;;; at a given vertex
+
+(defun record_goal (goal vertex)
+  (setq existing_goals
+    (cons
+      (list
+        (list 'goal goal)
+        (list 'vertex vertex)
+        (list '& (newvar)))
+      existing_goals)))
+
+;;; Add an edge to the agenda.  In topdown parsing, the only way that
+;;; duplicate edges can be introduced is via the topdown rule (as
+;;; long as there are no duplicate edges, the fundamental rule cannot
+;;; possibly create any).  So for efficiency the checking of duplications
+;;; is done in active_edge_function.
+
+(defun agenda_add (edge)
+  (setq agenda (cons edge agenda)))
+SHAR_EOF
+cat << SHAR_EOF >  featexp.lsp
+;;; featexp.lsp [Chapter  4] expanding a feature-based grammar into a CF-PSG
+
+;;; Assume that all the possible features, together with all
+;;; their possible values, are declared in the global variable
+;;; features:
+;;;
+;;; (setq features
+;;;  '((cat S NP VP PP AP P N V 0)
+;;;    (slash S NP VP PP AP P N V 0)
+;;;    (subcat S NP VP PP AP P N V 0)
+;;;    (empty yes no)))
+
+(defvar features)
+(defvar varlist)
+
+;;; expand a rule into all possible instances
+
+(defun expand_rule (rule)
+  (let ((newrule (fillout_rule rule)))
+    (subst_values varlist newrule)))
+
+;;; Produce a variant of a rule where every category simply
+;;; lists in order a value for each possible feature.
+;;; Entries for features come out in the reverse order to
+;;; the order of the global variable features
+
+(defun fillout_rule (rule)
+  (setq varlist ())
+  (mapcar #'fillout_cat rule))
+
+(defun fillout_cat (cat)
+  (let ((results ()))
+    (dolist (flist features results)
+      (setq results (cons (get_feature_val (car flist) cat) results)))))
+
+;;; for all possible name/value possibilities in the VARIABLE_LIST,
+;;; print out the appropriate version of the rule
+
+(defun subst_values (varlist rule)
+  (if (null varlist)
+    (print rule)
+    (dolist (val (cdar varlist))
+      (subst_values (cdr varlist)
+        (subst_value (caar varlist) val rule)))))
+
+;;; produce a new version of a thing (e.g. rule) which has VALUE
+;;; substituted for each occurrence of NAME
+
+(defun subst_value (name val thing)
+  (if (equal name thing)
+    val
+    (if (consp thing)
+      (cons
+        (subst_value name val (car thing))
+        (subst_value name val (cdr thing)))
+      thing)))
+
+;;; find the entry in a category for a given feature name.
+;;; if the entry is a variable, make sure it is in the VARLIST.
+;;; if there is no entry, introduce a new variable for it
+
+(defun get_feature_val (featname category)
+  (let
+    ((val
+       (if (assoc featname category)
+         (cadr (assoc featname category))
+         (gensym '_)))
+     (possvalues (cdr (assoc featname features))))
+    (if (and (symbolp val)
+        (equal (char (symbol-name val) 0) #\_)
+        (not (assoc val varlist)))
+      (setq varlist (cons (cons val possvalues) varlist)))
+    val))
+SHAR_EOF
+cat << SHAR_EOF >  finite.lsp
+;;; finite.lsp [Chapter  2] utilities for finite state networks
+
+;;; abbreviations
+
+(defvar abbreviations)
+
+;;; basic network accessing
+
+(defun initial_nodes (network)
+;;  returns the list of initial nodes
+   (nth 1 (assoc 'Initial network)))
+
+(defun final_nodes (network)
+;;  returns the list of final nodes
+   (nth 1 (assoc 'Final network)))
+
+(defun transitions (network)
+;;  returns the list of transitions
+   (cddr network))
+
+;;; the subcomponents of a transition
+
+(defun trans_node (transition)
+   (getf transition 'From))
+
+(defun trans_newnode (transition)
+   (getf transition 'to))
+
+(defun trans_label (transition)
+   (getf transition 'by))
+SHAR_EOF
+cat << SHAR_EOF >  foo.lsp
+
+(defun add_rules_to_expand (goal vertex)
+  (dolist (rule rules)
+    (let
+      ((subst_RHS (lhs_match goal rule)))
+      (if (not (null (car subst_RHS)))
+        (let* (
+           (LHS (apply_subst (car subst_RHS) goal))
+           (RHS (cadr subst_RHS)))
+          (if (not (subsumed_goal LHS vertex))
+            ;; if goal not subsumed, add the new edge,
+            ;; renaming so that it can combine with other
+            ;; edges from rules using the same variable
+            ;; symbols (e.g. edges from the same rule that just
+              ;; produced it)
+            (agenda_add
+              (rename
+                (list
+                  vertex
+                  vertex
+                  LHS
+                  nil
+                  RHS))))))))
+  (record_goal (goal vertex)))
+
+;;; look to see whether a particular category, or one more
+;;; general than it, has been looked for at a given vertex
+
+(defun subsumed_goal (goal vertex)
+  (let ((goaldag
+       (list
+         (list 'CAT goal)
+         (list 'START vertex)
+         (list '& (newvar)))))
+    (dolist (d existing_goals nil)
+      (if (subsumes g goaldag)
+        (return t)))))
+
+;;; record that a particular category has been searched for
+;;; at a given vertex
+
+(defun record_goal (goal vertex)
+  (setq existing_goals
+    (cons
+      (list
+        (list 'CAT goal
+          (list 'START vertex)
+          (list '& (newvar))))
+      existing_goals)))
+
+TYPE=1, ITEMS=94, ITEMBYTES=1, PUB
+(defun active_edge_function (edge)
+  (add_rules_to_expand (car (tofind edge)) (finish edge)))
+SHAR_EOF
+cat << SHAR_EOF >  forinfer.lsp
+;;; forinfer.lsp [Chapter  9] forwards inference engine
+
+(uses 'subst)
+(uses 'tunify)
+
+(defvar infrules)
+
+(defun for_infer (assertion)
+  (let ((to_add nil))
+    (if (null (fifind assertion))
+      (setq to_add (list assertion))
+      (setq to_add nil))
+    (do
+      ((assert (car to_add) (car to_add)))
+      ((null to_add))
+      (setq to_add (cdr to_add))
+      (princ "Adding ") (princ assert) (terpri)
+      (setq infrules (cons (list assert) infrules))
+      (dolist (new (consequences assert))
+        (if (and
+            (null (fifind new))
+            (not (member new to_add :test #'equal))
+            (not (equal new assert)))
+          (setq to_add (cons new to_add)))))))
+
+(defun consequences (assert)
+  (let ((results ()))
+    (dolist (infrule infrules)
+      (dolist (pattern (cdr infrule))
+        (if (and
+            (equal (car pattern) (car assert))
+            (equal (length pattern) (length assert)))
+          (let ((subst1 (termunify assert pattern)))
+            (if subst1
+              (dolist
+                (subst2
+                  (find_all (apply_subst subst1
+                      (remove pattern (cdr infrule)))))
+                (setq results
+                  (cons
+                    (apply_subst (compose_substs subst1 subst2) (car infrule))
+                    results))))))))
+    results))
+
+(defun find_all (goals)
+  (if (null goals)
+    (list empty_subst)
+    (let ((substs ()))
+      (dolist (subst (fifind (car goals)))
+        (dolist (newsubst (find_all (apply_subst subst (cdr goals))))
+          (setq substs (cons (compose_substs subst newsubst) substs))))
+      substs)))
+
+(defun fifind (goal)
+  (let ((substs ()))
+    (dolist (infrule infrules)
+      (if (and
+          (equal (caar infrule) (car goal))
+          (equal (length (car infrule)) (length goal))
+          (null (cdr infrule)))
+        (let ((newsubst (termunify goal (car (rename infrule)))))
+          (if newsubst
+            (setq substs (cons newsubst substs))))))
+    substs))
+SHAR_EOF
+cat << SHAR_EOF >  fsbgen.lsp
+;;; fsbgen.lsp [Chapter  2] breadth-first generation of sentences from a FSTN
+
+(uses 'finite)
+(uses 'fstape)
+
+(defun generate (network)
+  (let ((agenda (generate_initial_states network)))
+    (do () ((null agenda))   ; do until agenda empty
+      (setq agenda (generate_next_states_list agenda network)))))
+
+;;; Given a list of states (AGENDA), append together the next states
+;;; that arise from all the individual states
+
+(defun generate_next_states_list (agenda network)
+  (if (null agenda)
+    '()
+    (append
+      (generate_next_states (car agenda) network)
+      (generate_next_states_list (cdr agenda) network))))
+
+;;; calculate the next states from a given state (NODE TAPE)
+
+(defun generate_next_states (node_tape network)
+  (if (member (car node_tape) (final_nodes network))
+    (print (cadr node_tape)))
+  (let ((results '()))
+    (dolist (transition (transitions network) results)
+      (if (equal (car node_tape) (trans_node transition))
+        (dolist (newtape (generate_move (trans_label transition) (cadr node_tape)))
+          (setq results (cons (list (trans_newnode transition) newtape) results)))
+        '()) ; transition from the wrong node
+      )))
+
+;;; create a list of initial states, starting within a given network
+;;; and with an empty tape
+
+(defun generate_initial_states (network)
+  (let ((results '()))
+    (dolist (n (initial_nodes network) results)
+      (setq results (cons (cons n '()) results)))))
+SHAR_EOF
+cat << SHAR_EOF >  fsgen.lsp
+;;; fsgen.lsp [Chapter  2] exhaustive generation of sentences from a FSTN
+
+(uses 'finite)
+(uses 'fstape)
+
+(defun generate_next (node tape network)
+  ;; prints out sentences
+  (if (member node (final_nodes network))
+    (print tape)
+    (dolist (transition (transitions network))
+      (if (equal node (trans_node transition))
+        (dolist (newtape (generate_move (trans_label transition) tape))
+          (generate_next (trans_newnode transition) newtape network))
+        '())))) ; transition from the wrong node
+
+(defun generate (network)
+  ;;  generates valid sentences of the given network
+  (dolist (initialnode (initial_nodes network))
+          (generate_next initialnode nil network))
+          t)
+SHAR_EOF
+cat << SHAR_EOF >  fsrecog.lsp
+;;; fsrecog.lsp [Chapter  2] finite state recognition
+
+(uses 'finite)
+(uses 'fstape)
+
+(defun recognize (network tape)
+  ;; returns t if sucessfully recognizes tape - nil otherwise
+  (catch
+    'stop
+    (dolist (initialnode (initial_nodes network))
+      (recognize_next initialnode tape network))
+    nil))  ; failed to recognize
+
+(defun recognize_next (node tape network)
+  ;; throws t or returns nil
+  (if (and (null tape) (member node (final_nodes network)))
+    (throw 'stop t)               ; success
+    (dolist (transition (transitions network))
+      ;; try each transition of the network
+      (if (equal node (trans_node transition)) ; if it starts at the right node
+        (dolist (newtape (recognize_move (trans_label transition) tape))
+          ;; try each possible new value of tape
+          (recognize_next (trans_newnode transition) newtape network))))))
+SHAR_EOF
+cat << SHAR_EOF >  fstape.lsp
+;;; fstape.lsp [Chapter  2] tape-moving procedures for finite state networks
+
+;;; single tape moving for recognition
+
+;;; recognition
+
+(defun recognize_move (label tape)
+  (if (equal label (car tape))
+    (list (cdr tape))
+    (if (member (car tape) (assoc label abbreviations))
+      (list (cdr tape))
+      (if (equal label '|#|)
+        (list tape)
+        '()))))
+
+;;; single tape moving for generation
+
+(defun generate_move (label tape)
+  (if (equal label '|#|)
+    (list tape)
+    (if (assoc label abbreviations)
+      (let ((results '()))
+        (dolist (word (cdr (assoc label abbreviations)) results)
+          (setq results (cons (append tape (list word)) results))))
+      (list (append tape (list label))))))
+SHAR_EOF
+cat << SHAR_EOF >  fstgen.lsp
+;;; fstgen.lsp [Chapter  2] exhaustive generation of sentence pairs from a FST
+
+(uses 'finite)
+(uses 'fstape)
+
+(defun generate2 (network)
+  (dolist (initialnode (initial_nodes network))
+    (generate2_next initialnode '(() ()) network))
+  t)
+
+(defun generate2_next (node tape network)
+  (if (member node (final_nodes network))
+    (print tape)
+    (dolist (transition (transitions network))
+      (if (equal node (trans_node transition))
+        (dolist (newtape (generate2_move (trans_label transition) tape))
+          (generate2_next (trans_newnode transition) newtape network))
+        '()))))
+
+;;; Tape moving
+
+(defun generate2_move (label tape)
+  (if (listp label)    ;; a pair
+    (let ((results '()))
+      (dolist (newtape1 (generate_move (car label) (car tape)))
+        (dolist (newtape2 (generate_move (cadr label) (cadr tape)))
+          (setq results (cons (list newtape1 newtape2) results))))
+      results)
+    (if (equal label '|#|)
+      tape            ;; no move character
+      (if (assoc label abbreviations)
+        (generate2_move_list (cdr (assoc label abbreviations)) tape)
+        '()))))
+
+;;; Produce a list of new tapes, given a LIST of labels
+
+(defun generate2_move_list (labels tape)
+  (if (null labels)
+    '()
+    (append
+      (generate2_move (car labels) tape)
+      (generate2_move_list (cdr labels) tape))))
+SHAR_EOF
+cat << SHAR_EOF >  fstrans.lsp
+;;; fstrans.lsp [Chapter  2] finite state transduction
+
+(uses 'finite)
+(uses 'fstape)
+
+(defun transduce_move (label tape)
+  ;; returns a list of tapes
+  (if (listp label)    ; a pair
+    (let ((results '()))
+      (dolist (newinput (recognize_move (car label) (car tape)))
+        (dolist (newoutput (generate_move (cadr label) (cadr tape)))
+          (setq results (cons (list newinput newoutput) results))))
+      results)
+    (if (equal label '|#|)
+      (list tape)
+      (if (assoc label abbreviations)
+        (transduce_move_list (cdr (assoc label abbreviations)) tape)))))
+
+;;; Produce a list of new tapes, given a LIST of labels
+
+(defun transduce_move_list (labels tape)
+  (if (null labels)
+    '()
+    (append
+      (transduce_move (car labels) tape)
+      (transduce_move_list (cdr labels) tape))))
+
+(defun transduce_next (node tape network)
+  ;; returns nil or throws an output tape
+  (if (and (null (car tape)) (member node (final_nodes network)))
+    (throw 'stop (cadr tape))
+    (dolist (transition (transitions network))
+      (if (equal node (trans_node transition))
+        (dolist (newtape (transduce_move (trans_label transition) tape))
+          (transduce_next (trans_newnode transition) newtape network))
+        nil)))) ; transition from wrong node
+
+(defun transduce (network tape)
+  (catch
+    'stop
+    (dolist (initialnode (initial_nodes network))
+      (transduce_next initialnode (list tape nil) network))
+    nil))
+SHAR_EOF
+cat << SHAR_EOF >  help_1.lsp
+;;; HELP_1 - Simple FST for English-French translation
+
+(setq help_1
+ '(
+   (Initial (1))
+   (Final (5))
+    (From 1 to 2 by WH)
+    (From 2 to 3 by BE)
+    (From 3 to 4 by DET)
+    (From 4 to 5 by NOUN)
+  )
+)
+
+(setq abbreviations
+ '(
+   (WH (where ou))
+   (BE (is est))
+   (DET (the |#|))
+   (NOUN (exit la_sortie) (policeman le_gendarme)
+     (shop la_boutique) (toilet la_toilette))
+  ))
+SHAR_EOF
+cat << SHAR_EOF >  help_3.lsp
+;;; HELP_3 - Simple PT for English-French translation
+
+(proclaim '(special networks))
+
+(setq networks
+
+ '(
+
+   (S
+      (
+        (Initial (0))
+        (Final   (2))
+        (From 0 to 1 by NP)
+        (From 1 to 2 by VP)
+      )
+    )
+
+   (NP
+      (
+        (Initial (0))
+        (Final   (2))
+        (From 0 to 1 by DET-FEMN)
+        (From 1 to 2 by N-FEMN)
+        (From 0 to 4 by DET-MASC)
+        (From 4 to 2 by N-MASC)
+        (From 2 to 3 by WH)
+        (From 3 to 2 by VP)
+      )
+    )
+
+   (VP
+      (
+        (Initial (0))
+        (Final (1 2))
+        (From 0 to 1 by V)
+        (From 1 to 2 by NP)
+        (From 1 to 3 by (that que))
+        (From 3 to 2 by S)
+      )
+    )
+ ))
+
+(setq abbreviations
+ '(
+   (N-MASC (man homme) (horse cheval) )
+   (N-FEMN (house maison) (table table) )
+   (NP (John Jean) (Mary Marie) (Jean Jeanne) )
+   (DET-MASC (a un) (the le) (this ce) )
+   (DET-FEMN (a une) (the la) (this cette) )
+   (V (sees voit) (hits frappe) (sings chante) (lacks manque) )
+   (WH (who qui) (which qui) (that qui) )
+))
+SHAR_EOF
+cat << SHAR_EOF >  inherits.lsp
+;;; inherits.lsp [Chapter  9] simple semantic net with default inheritance
+
+(defun attr (entity attribute value)
+  (setf (get entity attribute) value))
+
+(defun isa (entity1 entity2)
+  (setf (get entity1 'isa)
+    (cons entity2 (get entity1 'isa))))
+
+(attr 'club_member 'sex 'male)
+(attr 'club_member 'over_50 'yes)
+(attr 'club_member 'citizenship 'US)
+
+(isa 'associate 'club_member)
+(attr 'associate 'associate_member 'yes)
+(attr 'associate 'citizenship 'non_US)
+
+(isa 'life_member 'club_member)
+(attr 'life_member 'life_member 'yes)
+(attr 'life_member 'over_50 'no)
+
+(isa 'kim 'associate)
+(attr 'kim 'over_50 'no)
+
+(isa 'jean 'associate)
+(attr 'jean 'sex 'female)
+(attr 'jean 'citizenship 'US)
+
+(isa 'mayumi 'life_member)
+(attr 'mayumi 'sex 'female)
+(attr 'mayumi 'over_50 'yes)
+(attr 'mayumi 'citizenship 'non_US)
+
+(isa 'beryl 'life_member)
+(attr 'beryl 'sex 'female)
+
+(defun get_attr (entity attribute)
+  (catch 'got_one
+    (if (get entity attribute)
+      (throw 'got_one (get entity attribute))
+      (dolist (e1 (get entity 'isa))
+        (let ((x (get_attr e1 attribute)))
+          (if x
+            (throw 'got_one x)))))
+    nil))
+SHAR_EOF
+# end of shell archive
+exit 0
